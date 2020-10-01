@@ -1,7 +1,7 @@
 /*
  * Geyserwise input/conditioning:
  * 
- *    ------- 5V
+ *    ------- 5V (PIN 5 MCU)
  *       |
  *       /
  *       \ 10k NTC
@@ -15,7 +15,7 @@
  *       / 3k 1%          |   10uF ?
  *       \                |
  *       |                |
- *    --------------------------- 0V
+ *    --------------------------- 0V (PIN 1 MCU)
  */
 
 // analog pin for temp input
@@ -52,7 +52,14 @@ void _temp_calc(void) {
   // calculate temp from r
   double c = (TEMP_B * TEMP_REF);
   c /= TEMP_B + (TEMP_REF * log(r / TEMP_R));
-  mod_temp = c - TEMP_K;
+  c -= TEMP_K;
+  if(c <= 0) {
+    mb_temp = 0;
+  } else if(c >= 999.0) {
+    mb_temp = 999;
+  } else {
+    mb_temp = c;
+  }
 }
 
 // read/smoothe temp and update calculation when it changes
