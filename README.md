@@ -12,3 +12,21 @@ I was hoping to reverse engineer the comms on a Geyserwise controller and use th
 # Modularised
 
 Software will be modular, with plug and playish insterfaces for each piece of hardware, so it should be reusable for any sort of hardware.
+
+# ModBus
+
+Monitoring/control is though 4 Modbus holding registers:
+
+Addr 0: Status bits (read only)
+bit 0 = run flag (set after thermostat temperature is first set)
+bit 1 = relay/element (set when the relay is on
+
+Addr 1: Temperature (read only)
+Temperature in °C
+
+Addr 2: Target temperature (read/write)
+Target temperature in °C
+
+Addr 3: Min target temperature (read/write)
+Temperature to turn element on again (heats from Min -> Targ and back again).
+NOTE: Set to 15/16 of target temperature whenever Target is set - no need to override it, unless you want a different hysteresis level.
