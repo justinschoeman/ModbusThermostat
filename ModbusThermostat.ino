@@ -3,23 +3,35 @@ bool dbg = true;
 
 // https://github.com/yaacov/ArduinoModbusSlave
 #include <ModbusSlave.h>
+#include <avr/wdt.h>
 
 #define MB_SLAVE_ID 1
 #define MB_BAUD 9600
 #define MB_RS485_NRE_DE 8
 
+// define this to keep the relay off until a temperature write is received
+#define PARANOID_OFF
+// define this to watchdog reset on comms list
+#define PARANOID_COMMS
+
 Modbus slave(Serial, MB_SLAVE_ID, MB_RS485_NRE_DE);
 
-// global comms input/output
+// modbus status flags
+// running - set when first temp write is received
+#define MB_STATUS_RUN  1U
+// element on - set when relay/element is on
+#define MB_STATUS_ON   2U
 
-#define MOD_STATUS_RUN 1
-#define MOD_STATUS_ON 2
+// global comms input/output
 uint16_t mb_status = 0; // status bits
 uint16_t mb_temp = 100; // temperature sensor value
 uint16_t mb_temp_trg = 45; // target temperature
 uint16_t mb_temp_trg_min = 43; // hysterisis min temp (defaults to trg - 1/16)
 
 #include "temp_geyserwise.h"
+#include "relay_geyserwise.h"
+
+bool _mb_comms;
 
 uint8_t mb_read1(uint16_t address, int8_t b) {
   uint16_t val;
@@ -48,6 +60,7 @@ uint8_t mb_read(uint8_t fc, uint16_t address, uint16_t length) {
   for(i = 0; i < length; i++) {
     if(!mb_read1(address+i, i)) return STATUS_ILLEGAL_DATA_ADDRESS;
   }
+  _mb_comms = true;
   return STATUS_OK;
 }
 
@@ -56,6 +69,7 @@ uint8_t mb_write1(uint16_t address, uint16_t val) {
     case 2:
       mb_temp_trg = val;
       mb_temp_trg_min = val - (val >> 4);
+      mb_status |= MB_STATUS_RUN;
       break;
     case 3:
       mb_temp_trg_min = val;
@@ -71,11 +85,17 @@ uint8_t mb_write(uint8_t fc, uint16_t address, uint16_t length) {
   for(i = 0; i < length; i++) {
     if(!mb_write1(address+i, slave.readRegisterFromBuffer(i))) return STATUS_ILLEGAL_DATA_ADDRESS;
   }
+  _mb_comms = true;
   return STATUS_OK;
 }
 
 
 void setup() {
+  // start watchdog
+  wdt_enable(WDTO_8S);
+
+  // make sure relay is turned off as early as possible!
+  relay_setup();
   Serial.begin(MB_BAUD);
   Serial.println("Starting...");
   slave.cbVector[CB_READ_HOLDING_REGISTERS] = mb_read;
@@ -91,6 +111,7 @@ void loop() {
   
   // run modbus engine
   dbg = false;
+  _mb_comms = false;
   Serial.flush();
   if(!slave.poll()) {
     Serial.flush();
@@ -99,6 +120,27 @@ void loop() {
   //return;
 
   // run relay
+  // be very paranoid about turning it off
+#ifdef PARANOID_OFF
+  if(mb_status & MB_STATUS_RUN) {
+#endif
+  if(mb_temp_trg == 0) {
+    // targ == 0 -> always off
+    relay_off();
+  } else if(mb_temp >= mb_temp_trg) {
+    // temp > targ -> always off
+    relay_off();
+  } else if(mb_temp < mb_temp_trg_min) {
+    // temp < min, then we can turn on
+    relay_on();
+  }
+  // untested case is temp >= min and temp < trg - in this case leave state unchanged
+#ifdef PARANOID_OFF
+  } else {
+    // have not yet received a temperature write - keep relay off
+    relay_off();
+  }
+#endif
 
   // dump debug, if possible
   if(dbg) {
@@ -111,4 +153,8 @@ void loop() {
   }
 
   // bump watchdog
+#ifdef PARANOID_COMMS
+  if(_mb_comms) // only reset wdt if we successfully processed a modbus command
+#endif
+  wdt_reset();
 }

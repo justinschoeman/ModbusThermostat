@@ -35,8 +35,8 @@ void temp_setup(void) {
   //pinMode(TEMP_PIN, INPUT);
 }
 
-// smoothed temp voltage
-uint16_t temp_val = 0;
+// smoothed temp voltage (initialise to max temp, so no spurious relay activations while temperature is stabilising)
+uint16_t temp_val = 0xffffU;
 int16_t temp_c = 100;
 
 // internal function to calculate temp from ADC val
