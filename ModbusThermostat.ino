@@ -5,7 +5,7 @@ bool dbg = true;
 #include <ModbusSlave.h>
 #include <avr/wdt.h>
 
-#define MB_SLAVE_ID 1
+#define MB_SLAVE_ID 'G'
 #define MB_BAUD 9600
 #define MB_RS485_NRE_DE 8
 
