@@ -13,6 +13,8 @@ bool dbg = true;
 #define PARANOID_OFF
 // define this to watchdog reset on comms list
 #define PARANOID_COMMS
+// define a maximum set limit, if required
+#define PARANOID_MAX 80
 
 Modbus slave(Serial, MB_SLAVE_ID, MB_RS485_NRE_DE);
 
@@ -67,11 +69,15 @@ uint8_t mb_read(uint8_t fc, uint16_t address, uint16_t length) {
 uint8_t mb_write1(uint16_t address, uint16_t val) {
   switch(address) {
     case 2:
+#ifdef PARANOID_MAX
+      if(val > PARANOID_MAX) val = PARANOID_MAX;
+#endif
       mb_temp_trg = val;
       mb_temp_trg_min = val - (val >> 4);
       mb_status |= MB_STATUS_RUN;
       break;
     case 3:
+      if(val > mb_temp_trg) val = mb_temp_trg;
       mb_temp_trg_min = val;
       break;
     default:
@@ -124,7 +130,7 @@ void loop() {
 #ifdef PARANOID_OFF
   if(mb_status & MB_STATUS_RUN) {
 #endif
-  if(mb_temp_trg == 0) {
+  if(mb_temp_trg == 0 || mb_temp_trg_min == 0) {
     // targ == 0 -> always off
     relay_off();
   } else if(mb_temp >= mb_temp_trg) {
