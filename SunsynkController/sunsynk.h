@@ -49,7 +49,8 @@ bool sunsynk_read()
     sun_pv_power += ss485.getResponseBuffer(187-175);
     sun_pv_power += ss485.getResponseBuffer(188-175);
     sun_pv_power += ss485.getResponseBuffer(189-175);
-    sun_batI = ss485.getResponseBuffer(191-175) / 100U;
+    sun_batI = ss485.getResponseBuffer(191-175);
+    sun_batI /= 100;
   } else {
     Serial.println("inverter read failed!");
     return false;
