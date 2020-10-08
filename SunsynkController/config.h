@@ -12,7 +12,7 @@
  * 
  * cfg_load_max: this is the maximum allowed load - if load exceeds this level then disconnect the geyser
  * cfg_load_restore: if the geyser has been disconnected due to overload, the only re-enable whne below this current
- * cfg_load_lock_ts: keep geyser off until restore conditions have been met for at least this time (s)
+ * cfg_load_lock_ts: keep geyser off until restore conditions have been met for at least this time (ms)
  * 
  * For normal heating modes (X is a number 1, or 2, for two possible sets of options - if activation conditions are good for both, then the highest temp is chosen):
  * 
@@ -32,7 +32,7 @@
  * cfg_boostX_temp: target temperature
  * cfg_boostX_temp_min: target minimum temperature (for hysteresis control - cam be = to temp for 1C hysteresis)
  * 
- * cfg_heat_lock_ts: keep geyser off until new heat/boost conditions have been met for at least this time (s)
+ * cfg_heat_lock_ts: keep geyser off until new heat/boost conditions have been met for at least this time (ms)
  * 
  * If any soc value is 0, then that option is disabled
  * 
@@ -40,8 +40,8 @@
 
 uint16_t cfg_load_max = 7000;
 uint16_t cfg_load_restore = 3000;
-unsigned long cfg_load_lock_ts = 20;
-unsigned long cfg_heat_lock_ts = 20;
+unsigned long cfg_load_lock_ts = 20UL * 1000UL;
+unsigned long cfg_heat_lock_ts = 20UL * 1000UL;
 
 
 struct config_s {
@@ -169,5 +169,30 @@ struct config_s cfgs[] = {
 
 #define CFG_CNT (sizeof(cfgs)/sizeof(struct config_s))
 
+struct config_s * cfg;
+
+// use time of day to select correct config
 void config_run(void) {
+  int i;
+
+  // test
+  //sun_hhmm += 20;
+  
+  Serial.print(F("Search config for time "));
+  Serial.println(sun_hhmm);
+  for(i = 0; i < CFG_CNT; i++) {
+    if(sun_hhmm >= cfgs[i].start_hhmm) {
+      // potentially ours?  check if it should not rather be next
+      if(i == (CFG_CNT - 1)) break; // no next - must be us
+      if(sun_hhmm < cfgs[i + 1].start_hhmm) break; // not next - must be us
+    }
+  }
+  if(i == CFG_CNT) {
+    // completed loop without finding it? must be before first i.e. last...
+    cfg = cfgs + (CFG_CNT - 1);
+  } else {
+    cfg = cfgs + i;
+  }
+  Serial.print(F("Chose CFG: "));
+  Serial.println(cfg->start_hhmm);
 }

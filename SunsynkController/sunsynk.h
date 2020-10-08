@@ -52,23 +52,23 @@ bool sunsynk_read()
     sun_batI = ss485.getResponseBuffer(191-175);
     sun_batI /= 100;
   } else {
-    Serial.println("inverter read failed!");
+    Serial.println(F("inverter read failed!"));
     return false;
   }
   // modbus slave library does not do interframe timing - manually delay for frame timer
   delay(100);
   // dump stats
-  Serial.print("Inverter Power: ");
+  Serial.print(F("Inverter Power: "));
   Serial.println(sun_inv_power);
-  Serial.print("Load Power: ");
+  Serial.print(F("Load Power: "));
   Serial.println(sun_load_power);
-  Serial.print("PV Power: ");
+  Serial.print(F("PV Power: "));
   Serial.println(sun_pv_power);
-  Serial.print("Bat SOC: ");
+  Serial.print(F("Bat SOC: "));
   Serial.println(sun_soc);
-  Serial.print("Bat I: ");
+  Serial.print(F("Bat I: "));
   Serial.println(sun_batI);
-  Serial.print("TOD: ");
+  Serial.print(F("TOD: "));
   Serial.println(sun_hhmm);
 
   // read time of day (every 15x)
@@ -90,7 +90,7 @@ bool sunsynk_read()
     sun_hhmm *= 100U;
     sun_hhmm += ss485.getResponseBuffer(1)>>8;
   } else {
-    Serial.println("inverter read T0D failed!");
+    Serial.println(F("inverter read T0D failed!"));
     return false;
   }
   // modbus slave library does not do interframe timing - manually delay for frame timer

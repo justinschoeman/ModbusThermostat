@@ -4,19 +4,22 @@
 
 // global config
 #define BUZZER_PIN 8
-#define SUNSYNK_POLL_MS 1000UL
+#define POLL_MS 1000UL
 
-#define BAT_MIN 49
-#define POWER_MAX 7000
-//#define POWER_LOCKOUT (1UL * 60UL*1000UL)
-#define POWER_LOCKOUT (1UL * 20UL*1000UL)
-#define POWER_RESTORE 3000
+// helper function
 
-#include "config.h"
+// overflow resistant interval calculation
+unsigned long ms_interval(unsigned long ts) {
+  unsigned long ms = millis();
+  ms -= ts;
+  return ms;
+}
+
 #include "rs485.h"
 #include "sunsynk.h"
-#include "thermostat.h"
+#include "config.h"
 #include "state.h"
+#include "thermostat.h"
 
 unsigned long poll_ts;
 
@@ -46,19 +49,18 @@ void setup()
   rs485_setup();
 
   // set up inverter
-  Serial.println("Init sunsynk");
+  Serial.println(F("Init sunsynk"));
   sunsynk_setup();
 
   // set up transmitter
-  Serial.println("Init thermostat");
+  Serial.println(F("Init thermostat"));
   therm_setup();
 
   // set up local timer
   poll_ts = millis();
 
   // set up local state
-  sys_temp = therm_temp; // default to on
-  sys_ts = millis();
+  state_setup();
 
   // keep watchdog ticking
   wdt_reset();
@@ -67,20 +69,24 @@ void setup()
 void loop()
 {
   // wait for poll interval
-  if((millis() - poll_ts) < SUNSYNK_POLL_MS) return;
+  if((millis() - poll_ts) < POLL_MS) return;
   poll_ts = millis();
 
   // read inverter state
   if(!sunsynk_read()) {
-    Serial.println("sunsynk read failed");
+    Serial.println(F("sunsynk read failed"));
     return;
   }
 
   // read thermostat state
   if(!therm_read()) {
-    Serial.println("th read failed");
+    Serial.println(F("th read failed"));
     return;
   }
+
+  // test
+  //sun_hhmm = 700;
+  //sun_soc = 50;
 
   // set config from state
   config_run();
@@ -89,6 +95,10 @@ void loop()
   state_run();
 
   // set target temp
+  if(!therm_run()) {
+    Serial.println(F("th run failed"));
+    return;
+  }
 
   // keep watchdog ticking on every successfull loop
   wdt_reset();
