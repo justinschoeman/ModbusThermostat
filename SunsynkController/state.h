@@ -137,6 +137,7 @@ void _st_run_boost1(void) {
   // soc ok
   if(st_boost1) return; // already active - no further processing
   // check for restore condition
+  //Serial.println(sun_pv_power - sun_load_power);
   if((sun_pv_power - sun_load_power) > cfg->boost1_power) {
     // excess pv available
     if(ms_interval(st_boost1_ms) < cfg_heat_lock_ts) {

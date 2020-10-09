@@ -7,7 +7,7 @@ int16_t sun_load_power;
 uint8_t sun_soc;
 int16_t sun_batI; // +ve = discharge
 uint16_t sun_hhmm;
-uint16_t sun_pv_power;
+int16_t sun_pv_power;
 
 // modbus/rs485 interface
 ModbusMaster ss485;

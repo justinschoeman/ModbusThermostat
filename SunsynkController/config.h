@@ -56,13 +56,13 @@ struct config_s {
   uint8_t heat2_temp_min;
 
   uint8_t boost1_soc;
-  uint16_t boost1_power;
+  int16_t boost1_power;
   int8_t boost1_batI;
   uint8_t boost1_temp;
   uint8_t boost1_temp_min;
 
   uint8_t boost2_soc;
-  uint16_t boost2_power;
+  int16_t boost2_power;
   int8_t boost2_batI;
   uint8_t boost2_temp;
   uint8_t boost2_temp_min;

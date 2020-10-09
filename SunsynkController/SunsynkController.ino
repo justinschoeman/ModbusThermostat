@@ -1,3 +1,6 @@
+#include <Wire.h>
+// https://github.com/bitbank2/ss_oled.git
+#include <ACROBOTIC_SSD1306.h>
 //https://github.com/4-20ma/ModbusMaster.git
 #include <ModbusMaster.h>
 #include <avr/wdt.h>
@@ -46,6 +49,11 @@ void setup()
   Serial.begin(9600);
   Serial.println(F(""));
   Serial.println(F("STARTING"));
+
+  // Initialze SSD1306 OLED display
+  oled.init();
+  oled.clearDisplay();
+  oled.putString("FOO");
 
   // set up rs485
   rs485_setup();
