@@ -10,11 +10,23 @@ uint16_t therm_temp; // current temperatire
 uint16_t therm_targ; // target temperature
 uint16_t therm_targ_min; // target min temperature
 
+// forward declaration
+bool therm_run(void);
+
 void therm_setup()
 {
   th485.begin(RS485_THERM_ADDR, Serial);
   th485.preTransmission(preTransmission);
   th485.postTransmission(postTransmission);
+  // turn thermostat off
+  // shouldn't really set state variables here, bur...
+  st_temp = 0;
+  st_temp_min = 0;
+  therm_targ = 1; // make sure not zero, so settings are actually sent
+  if(!therm_run()) {
+    Serial.println(F("Initial therm write failed!"));
+    while(1) {} // infinite loop and wait for WDT reset
+  }
 }
 
 bool therm_read()

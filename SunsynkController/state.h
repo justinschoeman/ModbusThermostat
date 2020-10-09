@@ -226,6 +226,8 @@ void state_run(void) {
     // fake minimal hysteresis
     st_temp_min = st_temp - (st_temp >> 4);
   }
+  // at least 1 degree of hysteresis, no matter what
+  if(st_temp_min == st_temp && st_temp > 0) st_temp_min -= 1;
   Serial.print(F("target temp: "));
   Serial.println(st_temp);
   Serial.print(F("target temp_min: "));

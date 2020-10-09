@@ -91,6 +91,15 @@ uint8_t mb_write(uint8_t fc, uint16_t address, uint16_t length) {
   for(i = 0; i < length; i++) {
     if(!mb_write1(address+i, slave.readRegisterFromBuffer(i))) return STATUS_ILLEGAL_DATA_ADDRESS;
   }
+  // oops - temp measurement can be noisy when decreasing through a point...
+  // enforce at least 1 degree of hysteresis to prevent that...
+  if(mb_temp_trg_min >= mb_temp_trg) {
+    if(mb_temp_trg > 0) {
+      mb_temp_trg_min = mb_temp_trg - 1;
+    } else {
+      mb_temp_trg_min = 0;
+    }
+  }
   _mb_comms = true;
   return STATUS_OK;
 }

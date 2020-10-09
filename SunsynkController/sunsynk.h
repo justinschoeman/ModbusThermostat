@@ -76,6 +76,8 @@ bool sunsynk_read()
     if(sun_cnt >= 15) sun_cnt = 0;
     return true;
   }
+  // flush serial before enabling 485 transceiver!
+  Serial.flush();
   result = ss485.readHoldingRegisters(23, 2);
   if(result == ss485.ku8MBSuccess) {
 #if 0

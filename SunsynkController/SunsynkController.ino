@@ -44,6 +44,8 @@ void setup()
 
   // set up serial port
   Serial.begin(9600);
+  Serial.println(F(""));
+  Serial.println(F("STARTING"));
 
   // set up rs485
   rs485_setup();
