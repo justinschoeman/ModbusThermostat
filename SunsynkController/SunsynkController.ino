@@ -5,7 +5,7 @@
 #include <avr/wdt.h>
 
 // global config
-#define BUZZER_PIN 8
+#define BUZZER_PIN 9
 #define POLL_MS 1000UL
 
 // helper function

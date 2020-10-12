@@ -1,7 +1,7 @@
 // inverter address
 #define INV_ADDR 1
-#define INV_RX 10
-#define INV_TX 11
+#define INV_RX 5
+#define INV_TX 6
 
 // shared state
 int16_t sun_inv_power;
