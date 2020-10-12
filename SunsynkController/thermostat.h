@@ -1,8 +1,11 @@
 // geyser thermostat address
-#define RS485_THERM_ADDR 'G'
+#define THERM_ADDR 'G'
+#define THERM_RX 12
+#define THERM_TX 13
 
 // modbus/rs485 interface
 ModbusMaster th485;
+SoftwareSerial thSerial(THERM_RX, THERM_TX);
 
 // shared state
 bool therm_on; // geyser element on?
@@ -10,21 +13,25 @@ uint16_t therm_temp; // current temperatire
 uint16_t therm_targ; // target temperature
 uint16_t therm_targ_min; // target min temperature
 
+void th_pre_tx(void) {
+  thSerial.listen();
+}
+
 // forward declaration
 bool therm_run(void);
 
 void therm_setup()
 {
-  th485.begin(RS485_THERM_ADDR, Serial);
-  th485.preTransmission(preTransmission);
-  th485.postTransmission(postTransmission);
+  thSerial.begin(9600);
+  th485.begin(THERM_ADDR, thSerial);
+  th485.preTransmission(th_pre_tx);
   // turn thermostat off
   // shouldn't really set state variables here, bur...
   st_temp = 0;
   st_temp_min = 0;
   therm_targ = 1; // make sure not zero, so settings are actually sent
   if(!therm_run()) {
-    Serial.println(F("Initial therm write failed!"));
+    display_error(F("Init therm write failed!"));
     while(1) {} // infinite loop and wait for WDT reset
   }
 }
@@ -55,8 +62,6 @@ bool therm_read()
     Serial.println(F("therm read failed!"));
     return false;
   }
-  // modbus slave library does not do interframe timing - manually delay for frame timer
-  delay(100);
   // dump stats
   Serial.print(F("Element ON: "));
   Serial.println(therm_on);
@@ -84,7 +89,5 @@ bool therm_run(void) {
     Serial.println(F("therm write temps failed!"));
     return false;
   }
-  // modbus slave library does not do interframe timing - manually delay for frame timer
-  delay(100);
   return true;
 }

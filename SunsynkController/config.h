@@ -40,8 +40,8 @@
 
 uint16_t cfg_load_max = 7000;
 uint16_t cfg_load_restore = 3000;
-unsigned long cfg_load_lock_ts = 20UL * 1000UL;
-unsigned long cfg_heat_lock_ts = 20UL * 1000UL;
+unsigned long cfg_load_lock_ts = 1 * 60UL * 1000UL;
+unsigned long cfg_heat_lock_ts = 2 * 60UL * 1000UL;
 
 
 struct config_s {
@@ -103,7 +103,7 @@ struct config_s cfgs[] = {
     .heat1_temp_min = 40,
 
     // normal temp (aim for 50deg)
-    .heat2_soc = 50,
+    .heat2_soc = 70,
     .heat2_temp = 50,
     .heat2_temp_min = 49,
 
@@ -111,15 +111,15 @@ struct config_s cfgs[] = {
     .boost1_soc = 70,
     .boost1_power = 3500,
     .boost1_batI = 0,
-    .boost1_temp = 75,
-    .boost1_temp_min = 75,
+    .boost1_temp = 80,
+    .boost1_temp_min = 80,
 
-    // top-up boost (boost what we can when battery is very full)
+    // top-up boost (boost what we can when battery is very full allow up to 2kW from battery)
     .boost2_soc = 90,
     .boost2_power = 0,
-    .boost2_batI = 40,
-    .boost2_temp = 75,
-    .boost2_temp_min = 75,
+    .boost2_batI = 60,//40,
+    .boost2_temp = 80,
+    .boost2_temp_min = 80,
   },
   { // evening config - don't expect any boost, maintain comfortable temp for evening showers
     .start_hhmm = 1800,
