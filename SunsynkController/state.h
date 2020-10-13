@@ -27,9 +27,11 @@ unsigned long st_heat2_ms; // time since last heat2 disable condition
 
 bool st_boost1; // boost1 state
 unsigned long st_boost1_ms; // time since last boost1 disable condition
+unsigned long st_boost1_cut_ms; // time since last boost1 enable condition
 
 bool st_boost2; // boost2 state
 unsigned long st_boost2_ms; // time since last boost2 disable condition
+unsigned long st_boost2_cut_ms; // time since last boost2 enable condition
 
 void state_setup(void) {
   // set defaults
@@ -39,13 +41,15 @@ void state_setup(void) {
   st_lockout = false;
   st_lockout_ms = millis();
   st_heat1 = false;
-  st_heat1_ms = millis();
+  st_heat1_ms = st_lockout_ms;
   st_heat2 = false;
-  st_heat2_ms = millis();
+  st_heat2_ms = st_lockout_ms;
   st_boost1 = false;
-  st_boost1_ms = millis();
+  st_boost1_ms = st_lockout_ms;
+  st_boost1_cut_ms = st_lockout_ms;
   st_boost2 = false;
-  st_boost2_ms = millis();
+  st_boost2_ms = st_lockout_ms;
+  st_boost2_cut_ms = st_lockout_ms;
 }
 
 // run load lockout state engine
@@ -129,11 +133,16 @@ void _st_run_heat2(void) {
 void _st_run_boost1(void) {
   // soc below minimum?
   if(cfg->boost1_soc == 0 || sun_soc < cfg->boost1_soc || sun_batI > cfg->boost1_batI) {
+    if(st_boost1 && ms_interval(st_boost1_cut_ms) < cfg_boost_cut_ts) {
+      Serial.println(F("boost1 exceed timer"));
+      return;
+    }
     Serial.println(F("boost1 exceed/disabled"));
     st_boost1 = false;
     st_boost1_ms = millis();
     return;
   }
+  st_boost1_cut_ms = millis(); // keep track of the last time conditions were good
   // soc ok
   if(st_boost1) return; // already active - no further processing
   // check for restore condition
@@ -158,11 +167,16 @@ void _st_run_boost1(void) {
 void _st_run_boost2(void) {
   // soc below minimum?
   if(cfg->boost2_soc == 0 || sun_soc < cfg->boost2_soc || sun_batI > cfg->boost2_batI) {
+    if(st_boost2 && ms_interval(st_boost2_cut_ms) < cfg_boost_cut_ts) {
+      Serial.println(F("boost2 exceed timer"));
+      return;
+    }
     Serial.println(F("boost2 exceed/disabled"));
     st_boost2 = false;
     st_boost2_ms = millis();
     return;
   }
+  st_boost2_cut_ms = millis(); // keep track of the last time conditions were good
   // soc ok
   if(st_boost2) return; // already active - no further processing
   // check for restore condition

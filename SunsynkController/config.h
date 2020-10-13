@@ -40,8 +40,9 @@
 
 uint16_t cfg_load_max = 7000;
 uint16_t cfg_load_restore = 3000;
-unsigned long cfg_load_lock_ts = 1 * 60UL * 1000UL;
-unsigned long cfg_heat_lock_ts = 2 * 60UL * 1000UL;
+unsigned long cfg_load_lock_ts = 5 * 60UL * 1000UL;
+unsigned long cfg_heat_lock_ts = 10 * 60UL * 1000UL;
+unsigned long cfg_boost_cut_ts = 10UL * 1000UL;
 
 
 struct config_s {

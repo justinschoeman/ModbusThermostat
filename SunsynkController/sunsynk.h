@@ -1,6 +1,6 @@
 // inverter address
 #define INV_ADDR 1
-#define INV_RX 5
+#define INV_RX 7
 #define INV_TX 6
 
 // shared state

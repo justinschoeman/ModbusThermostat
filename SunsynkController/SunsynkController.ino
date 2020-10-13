@@ -5,7 +5,7 @@
 #include <avr/wdt.h>
 
 // global config
-#define BUZZER_PIN 9
+#define BUZZER_PIN 5
 #define POLL_MS 1000UL
 
 // helper function
@@ -76,7 +76,7 @@ void setup()
 void loop()
 {
   // test
-  wdt_reset();
+  //wdt_reset();
 
   // wait for poll interval
   if((millis() - poll_ts) < POLL_MS) return;

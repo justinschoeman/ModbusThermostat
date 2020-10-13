@@ -1,6 +1,6 @@
 // geyser thermostat address
 #define THERM_ADDR 'G'
-#define THERM_RX 7
+#define THERM_RX 9
 #define THERM_TX 8
 
 // modbus/rs485 interface
