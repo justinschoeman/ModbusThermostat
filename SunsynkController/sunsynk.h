@@ -1,5 +1,7 @@
 // inverter address
-#define RS485_INV_ADDR 1
+#define INV_ADDR 1
+#define INV_RX 7
+#define INV_TX 6
 
 // shared state
 int16_t sun_inv_power;
@@ -11,16 +13,21 @@ int16_t sun_pv_power;
 
 // modbus/rs485 interface
 ModbusMaster ss485;
+SoftwareSerial ssSerial(INV_RX, INV_TX);
 
 // time read countdown
 uint8_t sun_cnt = 0;
 
+void ss_pre_tx(void) {
+  ssSerial.listen();
+}
+
 // setup
 void sunsynk_setup()
 {
-  ss485.begin(RS485_INV_ADDR, Serial);
-  ss485.preTransmission(preTransmission);
-  ss485.postTransmission(postTransmission);
+  ssSerial.begin(9600);
+  ss485.begin(INV_ADDR, ssSerial);
+  ss485.preTransmission(ss_pre_tx);
 }
 
 bool sunsynk_read()
@@ -55,8 +62,6 @@ bool sunsynk_read()
     Serial.println(F("inverter read failed!"));
     return false;
   }
-  // modbus slave library does not do interframe timing - manually delay for frame timer
-  delay(100);
   // dump stats
   Serial.print(F("Inverter Power: "));
   Serial.println(sun_inv_power);
@@ -95,7 +100,5 @@ bool sunsynk_read()
     Serial.println(F("inverter read T0D failed!"));
     return false;
   }
-  // modbus slave library does not do interframe timing - manually delay for frame timer
-  delay(100);
   return true;
 }

@@ -14,6 +14,12 @@ void rs485_setup(void) {
 
 // rs485 transceiver mode control
 void preTransmission() {
+  Serial.flush();
+  while(Serial.available()) {
+    int i = Serial.read();
+    Serial.println(i);
+  }
+  Serial.flush();
   digitalWrite(RS485_NRE, 1);
   digitalWrite(RS485_DE, 1);
 }

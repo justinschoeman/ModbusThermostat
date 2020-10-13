@@ -1,12 +1,11 @@
-#include <Wire.h>
-// https://github.com/bitbank2/ss_oled.git
-#include <ACROBOTIC_SSD1306.h>
+#include "Arduino.h"
 //https://github.com/4-20ma/ModbusMaster.git
 #include <ModbusMaster.h>
+#include <SoftwareSerial.h>
 #include <avr/wdt.h>
 
 // global config
-#define BUZZER_PIN 8
+#define BUZZER_PIN 5
 #define POLL_MS 1000UL
 
 // helper function
@@ -18,11 +17,14 @@ unsigned long ms_interval(unsigned long ts) {
   return ms;
 }
 
-#include "rs485.h"
+// eewww forward declaration
+void display_error(const __FlashStringHelper  * t);
+
 #include "sunsynk.h"
 #include "config.h"
 #include "state.h"
 #include "thermostat.h"
+#include "display.h"
 
 unsigned long poll_ts;
 
@@ -50,13 +52,8 @@ void setup()
   Serial.println(F(""));
   Serial.println(F("STARTING"));
 
-  // Initialze SSD1306 OLED display
-  oled.init();
-  oled.clearDisplay();
-  oled.putString("FOO");
-
-  // set up rs485
-  rs485_setup();
+  // Initialze display
+  display_setup();
 
   // set up inverter
   Serial.println(F("Init sunsynk"));
@@ -78,19 +75,22 @@ void setup()
 
 void loop()
 {
+  // test
+  //wdt_reset();
+
   // wait for poll interval
   if((millis() - poll_ts) < POLL_MS) return;
   poll_ts = millis();
 
   // read inverter state
   if(!sunsynk_read()) {
-    Serial.println(F("sunsynk read failed"));
+    display_error(F("sunsynk read failed"));
     return;
   }
 
   // read thermostat state
   if(!therm_read()) {
-    Serial.println(F("th read failed"));
+    display_error(F("th read failed"));
     return;
   }
 
@@ -106,9 +106,12 @@ void loop()
 
   // set target temp
   if(!therm_run()) {
-    Serial.println(F("th run failed"));
+    display_error(F("th run failed"));
     return;
   }
+
+  // update display
+  display_run();
 
   // keep watchdog ticking on every successfull loop
   wdt_reset();
