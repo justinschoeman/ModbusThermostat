@@ -40,14 +40,8 @@
 
 uint16_t cfg_load_max = 7000;
 uint16_t cfg_load_restore = 3000;
-#if 1
-unsigned long cfg_load_lock_ts = 5UL * 60UL * 1000UL;
-unsigned long cfg_heat_lock_ts = 10UL * 60UL * 1000UL;
-#else
-// short timers for testing
-unsigned long cfg_load_lock_ts = 20UL * 1000UL;
-unsigned long cfg_heat_lock_ts = 30UL * 1000UL;
-#endif
+unsigned long cfg_load_lock_ts = 5 * 60UL * 1000UL;
+unsigned long cfg_heat_lock_ts = 10 * 60UL * 1000UL;
 unsigned long cfg_boost_cut_ts = 10UL * 1000UL;
 
 
@@ -76,6 +70,7 @@ struct config_s {
 };
 
 struct config_s cfgs[] = {
+#if 1
   { // early morning config - prep for morning shower if there is reasonable battery left...
     .start_hhmm = 400,
 
@@ -123,8 +118,8 @@ struct config_s cfgs[] = {
 
     // top-up boost (boost what we can when battery is very full allow up to 2kW from battery)
     .boost2_soc = 90,
-    .boost2_power = -100, // inverter lightly cycles battery at top...
-    .boost2_batI = 40,
+    .boost2_power = 0,
+    .boost2_batI = 60,//40,
     .boost2_temp = 80,
     .boost2_temp_min = 80,
   },
@@ -172,6 +167,7 @@ struct config_s cfgs[] = {
     .boost2_temp = 0,
     .boost2_temp_min = 0,
   },
+#endif
 };
 
 #define CFG_CNT (sizeof(cfgs)/sizeof(struct config_s))
