@@ -5,7 +5,11 @@
 
 // modbus/rs485 interface
 ModbusMaster th485;
+#ifdef ESP8266
+SoftwareSerial thSerial(D7, D6);
+#else
 SoftwareSerial thSerial(THERM_RX, THERM_TX);
+#endif
 
 // shared state
 bool therm_on; // geyser element on?

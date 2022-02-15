@@ -13,7 +13,13 @@ int16_t sun_pv_power;
 
 // modbus/rs485 interface
 ModbusMaster ss485;
+#ifdef ESP8266
+SoftwareSerial ssSerial(D5, D0);
+//#error esp
+#else
 SoftwareSerial ssSerial(INV_RX, INV_TX);
+//#error avr
+#endif
 
 // time read countdown
 uint8_t sun_cnt = 0;

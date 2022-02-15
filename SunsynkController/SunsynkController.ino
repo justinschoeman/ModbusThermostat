@@ -2,7 +2,9 @@
 //https://github.com/4-20ma/ModbusMaster.git
 #include <ModbusMaster.h>
 #include <SoftwareSerial.h>
+#ifndef ESP8266
 #include <avr/wdt.h>
+#endif
 
 // global config
 #define BUZZER_PIN 5
